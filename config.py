@@ -37,17 +37,17 @@ class ArgConfig:
         self.parser.add_argument('--warmup_proportion', default=0.1, type=float)
         self.parser.add_argument('--weight_decay', default=0.01, type=float)
         self.parser.add_argument('--adam_epsilon', default=1e-8, type=float)
-        self.parser.add_argument('--max_grad_norm', default=0.5, type=float, help='max grad clip')
+        self.parser.add_argument('--max_grad_norm', default=1, type=float, help='max grad clip')
 
         # 模型选择参数
         self.parser.add_argument('--use_crf', type=bool, default=True, help='是否使用CRF')
         self.parser.add_argument('--use_lstm', type=bool, default=False, help='是否使用LSTM')
 
         # 训练参数
-        self.parser.add_argument('--do_train', default=False, type=bool, help='是否训练')
+        self.parser.add_argument('--do_train', default=True, type=bool, help='是否训练')
         self.parser.add_argument('--do_test', default=True, type=bool, help='是否测试')
         self.parser.add_argument('--epochs', default=10, type=int, help='epoch数量')
-        self.parser.add_argument('--batch_size', default=8, type=int, help='epoch数量')
+        self.parser.add_argument('--batch_size', default=32, type=int, help='epoch数量')
         self.parser.add_argument('--log_interval', default=1, type=int, help='每多少步记录一次训练日志')
         self.parser.add_argument('--valid_step', default=500, type=int, help='每多少步记录一次验证日志')
         self.parser.add_argument('--n_gpu', default=1, type=int, help='设定 GPU device 数量 ')
@@ -57,8 +57,8 @@ class ArgConfig:
         con['save_model_dir'] = os.path.join(con['save_model_dir'],  con['data_name'])
         con['save_result_dir'] = os.path.join(con['save_result_dir'], con['data_name'])
         con['log_dir'] = os.path.join(con['log_dir'], con['data_name'])
-        con['resume'] = os.path.join(con['save_model_dir'], 'best.pt')
-        # con['resume'] = None
+        # con['resume'] = os.path.join(con['save_model_dir'], 'best.pt')
+        con['resume'] = None
         con['labels'] = read_json(con['data_dir'], 'labels')
         con['id2tag'] = {int(v): k for k, v in read_json(con['data_dir'], 'nor_ent2id').items()}
         con['num_tags'] = len(con['id2tag'])

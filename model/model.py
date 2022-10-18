@@ -34,6 +34,9 @@ class BertNerModel(nn.Module):
             self.lstm = nn.LSTM(out_dims, self.lstm_hidden, self.num_layers,
                                 bidirectional=True, batch_first=True, dropout=dropout)
             self.linear = nn.Linear(self.lstm_hidden*2, self.num_tags)
+            init_blocks = [self.linear]
+            self._init_weights(init_blocks, initializer_range=self.encoder_config.initializer_range)
+
         else:
             self.mid_linear = nn.Sequential(
                 nn.Linear(out_dims, 256),
@@ -41,6 +44,8 @@ class BertNerModel(nn.Module):
                 nn.Dropout(dropout)
             )
             self.classifier = nn.Linear(256, self.num_tags)
+            init_blocks = [self.mid_linear, self.classifier]
+            self._init_weights(init_blocks, initializer_range=self.encoder_config.initializer_range)
 
         if config['use_crf'] is True:
             self.crf = CRF(self.num_tags, batch_first=True)
@@ -88,6 +93,22 @@ class BertNerModel(nn.Module):
             active_labels = data["labels"].view(-1)[active_loss]
             loss = self.criterion(active_logits, active_labels)
             return loss, logits
+
+    @staticmethod
+    def _init_weights(blocks, **kwargs):
+        """参数初始化"""
+        for block in blocks:
+            for module in block.modules():
+                if isinstance(module, nn.Linear):
+                    if module.bias is not None:
+                        nn.init.zeros_(module.bias)
+                elif isinstance(module, nn.Embedding):
+                    nn.init.normal_(module.weight,
+                                    mean=0,
+                                    std=kwargs.pop("initializer_range", 0.02))
+                elif isinstance(module, nn.LayerNorm):
+                    nn.init.ones_(module.weight)
+                    nn.init.zeros_(module.bias)
 
 
 
